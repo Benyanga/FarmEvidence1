@@ -1,6 +1,8 @@
 node_modules/
 server/.env
 client/.env
+*.env
+!*.env.example
 build/
 client/build/
 .DS_Store
