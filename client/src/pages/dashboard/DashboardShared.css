@@ -1,0 +1,71 @@
+/* Shared primitives for the Researcher (.rdash) and Farmer (.fdash) data
+   dashboards — one definition per pattern instead of two near-identical
+   copies. Page-specific rules (comparison table, KPI grid, phase card, etc.)
+   stay in each page's own CSS file; only the truly common chrome lives here.
+   Both dashboards import this file. Colours/type/radius/shadow read from
+   styles/design-tokens.css (imported globally in index.css) — the single
+   source of truth shared with the Python chart service and PDF reports.
+   The DM Sans font-face itself is now loaded once, globally, in index.css
+   (the whole app uses it, not just these two pages) — no @import here. */
+
+:is(.rdash, .fdash) {
+  font-family: var(--fe-font-ui);
+  background: var(--fe-gray-50);
+  color: var(--fe-ink);
+  font-size: 13px;
+  margin: -1rem;
+  padding: 1rem;
+}
+:is(.rdash, .fdash) * { box-sizing: border-box; }
+
+/* ---------- Page header — a plain title row, matching the same pattern
+   every other page in the app uses (e.g. SetupDetail.jsx's "d-flex
+   justify-content-between my-3" heading + actions): no border, no
+   background box, no bar treatment. It is NOT a second topbar — the app's
+   real branded topbar (ResearchTopbar/FarmerTopbar) already shows the page
+   title ("Dashboard") and the role badge, so this only adds what isn't
+   shown there: the selected entity's name, its season meta, and the live
+   sync state. No mode pill, no repeated "Dashboard" label. ---------- */
+:is(.rdash, .fdash) .dash-header {
+  display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+  margin: 0.75rem 0 1rem;
+}
+:is(.rdash, .fdash) .tb-left { display: flex; flex-direction: column; min-width: 0; }
+:is(.rdash, .fdash) .tb-name { font-size: 19px; font-weight: 700; color: var(--fe-ink); line-height: 1.2; }
+:is(.rdash, .fdash) .tb-meta { font-size: 11px; color: var(--fe-gray-500); margin-top: 3px; }
+:is(.rdash, .fdash) .tb-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+:is(.rdash, .fdash) .sync-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+:is(.rdash, .fdash) .sync-pill.online { background: var(--fe-positive-soft); border: 1px solid #86EFAC; color: var(--fe-positive); }
+:is(.rdash, .fdash) .sync-pill.syncing { background: var(--fe-caution-soft); border: 1px solid #FDE68A; color: var(--fe-caution); }
+:is(.rdash, .fdash) .sync-pill.offline { background: var(--fe-negative-soft); border: 1px solid #FCA5A5; color: var(--fe-negative); }
+:is(.rdash, .fdash) .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+/* ---------- Entity + season tabs ---------- */
+:is(.rdash, .fdash) .entity-tabs, :is(.rdash, .fdash) .season-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+:is(.rdash, .fdash) .stab { padding: 5px 14px; border: var(--fe-border); border-radius: var(--fe-radius-sm); font-size: 12px; font-weight: 500; color: var(--fe-gray-600); background: var(--fe-gray-0); cursor: pointer; user-select: none; }
+:is(.rdash, .fdash) .stab.active { background: var(--fe-ca); color: var(--fe-gray-0); border-color: var(--fe-ca); }
+:is(.rdash, .fdash) .stab:hover:not(.active) { border-color: #94A3B8; }
+:is(.rdash, .fdash) .stab.ca-tag { border-bottom: 2px solid var(--fe-ca); }
+:is(.rdash, .fdash) .stab.cf-tag { border-bottom: 2px solid var(--fe-cf); }
+
+/* ---------- Generic card ---------- */
+:is(.rdash, .fdash) .card { background: var(--fe-gray-0); border-radius: var(--fe-radius-lg); border: var(--fe-border); padding: 14px 18px; box-shadow: var(--fe-shadow-card); }
+:is(.rdash, .fdash) .card-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--fe-gray-500); margin-bottom: 10px; }
+
+/* ---------- Alerts ---------- */
+:is(.rdash, .fdash) .alert-item { display: flex; align-items: flex-start; gap: 8px; padding: 8px 10px; border-radius: 8px; margin-bottom: 6px; font-size: 11px; line-height: 1.45; }
+:is(.rdash, .fdash) .alert-item:last-child { margin-bottom: 0; }
+:is(.rdash, .fdash) .ai-r { background: var(--fe-negative-soft); border-left: 3px solid var(--fe-negative-line); color: var(--fe-negative); }
+:is(.rdash, .fdash) .ai-a { background: var(--fe-caution-soft); border-left: 3px solid var(--fe-caution-line); color: var(--fe-caution); }
+:is(.rdash, .fdash) .ai-g { background: var(--fe-positive-soft); border-left: 3px solid var(--fe-positive-line); color: var(--fe-positive); }
+:is(.rdash, .fdash) .ai-n { background: var(--fe-info-soft); border-left: 3px solid var(--fe-ca); color: var(--fe-info); }
+
+/* ---------- Mini stat tiles ---------- */
+:is(.rdash, .fdash) .mini-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+:is(.rdash, .fdash) .mini { background: var(--fe-gray-50); border-radius: var(--fe-radius-sm); padding: 9px 10px; }
+:is(.rdash, .fdash) .mini-val { font-size: 15px; font-weight: 600; color: var(--fe-ink); }
+:is(.rdash, .fdash) .mini-lbl { font-size: 10px; color: var(--fe-gray-500); margin-top: 2px; }
+
+:is(.rdash, .fdash) .muted-note { font-size: 11px; color: var(--fe-gray-500); font-style: italic; padding: 6px 0; }
+:is(.rdash, .fdash) .empty-page { padding: 48px 18px; text-align: center; color: var(--fe-gray-600); background: var(--fe-gray-0); border: var(--fe-border); border-radius: var(--fe-radius-lg); }

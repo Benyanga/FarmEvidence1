@@ -1,0 +1,136 @@
+/* ==========================================================================
+   FarmEvidence — Design Tokens
+   Single source of truth for colour, type, radius, and shadow across:
+     - Researcher Mode dashboard
+     - Farmer Mode dashboard
+     - In-app charts
+     - Exported Seasonal Farm Report / Trial Report (print theme)
+   Every other stylesheet or theme object in the app should read from
+   these variables rather than redefining hex values locally.
+
+   A static copy of this file also lives in client/public/style-guide/ for
+   the standalone palette_style_guide.html reference page (public/ is served
+   outside the React bundle, so it can't import from src/) — keep both in
+   sync if either changes.
+   ========================================================================== */
+
+:root {
+
+  /* ---------------------------------------------------------------------
+     BRAND — app wide identity. Used for chrome, links, active states,
+     and every non treatment accent. Never used to represent CA or CF.
+     --------------------------------------------------------------------- */
+  --fe-brand-900: #1F4630;
+  --fe-brand-700: #2C5F3E;   /* primary brand green, RICA green */
+  --fe-brand-500: #4A7C59;   /* secondary brand green */
+  --fe-brand-300: #8FB89E;
+  --fe-brand-100: #E3EEE6;
+
+  /* ---------------------------------------------------------------------
+     TREATMENT IDENTITY — fixed application wide. CA and CF must resolve
+     to these two colours everywhere a treatment is shown: tables, KPI
+     accents, chart series, report headers. Never reassigned per trial,
+     never used for anything that is not literally CA or CF.
+     --------------------------------------------------------------------- */
+  --fe-ca: #1E2D40;          /* Conservation Agriculture */
+  --fe-ca-tint: rgba(30, 45, 64, 0.12);
+  --fe-ca-100: #E7EAEE;
+
+  --fe-cf: #BA7517;          /* Conventional Farming */
+  --fe-cf-tint: rgba(186, 117, 23, 0.12);
+  --fe-cf-100: #F5E9D7;
+
+  /* ---------------------------------------------------------------------
+     NEUTRAL SCALE — shared by dashboard surfaces and report tables.
+     --------------------------------------------------------------------- */
+  --fe-gray-0:   #FFFFFF;
+  --fe-gray-50:  #F8FAFC;   /* app background */
+  --fe-gray-100: #F1F3F0;   /* table header fill, print */
+  --fe-gray-150: #FAFAF8;   /* table zebra row, print */
+  --fe-gray-200: #E2E8F0;   /* card borders, dashboard */
+  --fe-gray-300: #D4D4D0;   /* rule lines, print */
+  --fe-gray-500: #9CA3AF;   /* muted captions */
+  --fe-gray-600: #6B7280;   /* secondary labels */
+  --fe-gray-700: #4B5563;   /* body text, dashboard */
+  --fe-gray-800: #374151;   /* row text, dashboard */
+  --fe-gray-900: #1A1A1A;   /* body text, print */
+  --fe-ink:      #111827;   /* primary value text, dashboard */
+
+  /* ---------------------------------------------------------------------
+     SEMANTIC STATES — meaning, not decoration. Direction is always
+     determined per metric (see chartTheme.js treatmentColor / favour
+     helpers), never assumed.
+     --------------------------------------------------------------------- */
+  --fe-positive:      #166534;
+  --fe-positive-bg:   #DCFCE7;
+  --fe-positive-soft: #F0FDF4;
+  --fe-positive-line: #22C55E;
+
+  --fe-caution:       #92400E;
+  --fe-caution-bg:    #FEF3C7;
+  --fe-caution-soft:  #FFFBEB;
+  --fe-caution-line:  #F59E0B;
+
+  --fe-negative:      #991B1B;
+  --fe-negative-bg:   #FEE2E2;
+  --fe-negative-soft: #FEF2F2;
+  --fe-negative-line: #EF4444;
+
+  --fe-info:          #0C447C;
+  --fe-info-bg:       #E4EFF8;
+  --fe-info-soft:     #EFF4FA;
+  --fe-info-line:     #185FA5;
+
+  /* ---------------------------------------------------------------------
+     CATEGORICAL CHART PALETTE — for multi-category series (cost
+     categories, alert types) where more than the two treatment colours
+     are needed. Muted and earthy so nothing competes with the CA navy /
+     CF amber identity pair above. Use in index order.
+
+     Adjusted from the originally-supplied set: 5 of 8 slots read as gray
+     (OKLCH chroma below the 0.10 categorical floor) and one (dusty gold)
+     failed 3:1 contrast on white — both verified via the dataviz skill's
+     validator (scripts/validate_palette.js), not eyeballed. Each slot's
+     hue family was held constant and only chroma/lightness nudged until
+     it passed CVD-separation + contrast; "stone grey" in particular can't
+     pass as a true gray (near-zero chroma is definitionally
+     indistinguishable under CVD simulation) so it now reads as a muted
+     olive rather than gray — a real category color, at the cost of the
+     original name.
+     --------------------------------------------------------------------- */
+  --fe-cat-1: #008568;  /* sage teal (was #3F7D6B — chroma-floor fix)   */
+  --fe-cat-2: #2D66A7;  /* slate blue (was #4C6788 — chroma-floor fix)  */
+  --fe-cat-3: #AA7E19;  /* dusty gold (was #C79A3E — contrast fix)      */
+  --fe-cat-4: #B8654F;  /* clay rose (unchanged — already passing)      */
+  --fe-cat-5: #8361AD;  /* lavender (was #7C6B94 — chroma-floor fix)    */
+  --fe-cat-6: #6B8F47;  /* moss (unchanged — already passing)           */
+  --fe-cat-7: #95902A;  /* olive, was "stone grey" #8C8C86 — see note   */
+  --fe-cat-8: #1493C1;  /* dusty sky (was #5B8FA8 — chroma-floor fix)   */
+
+  /* ---------------------------------------------------------------------
+     TYPOGRAPHY
+     --------------------------------------------------------------------- */
+  --fe-font-ui:    'DM Sans', system-ui, sans-serif;                 /* dashboards, in app charts */
+  --fe-font-print: 'Palatino Linotype', Palatino, 'Book Antiqua', serif; /* reports, print charts */
+
+  /* ---------------------------------------------------------------------
+     SHAPE / ELEVATION
+     --------------------------------------------------------------------- */
+  --fe-radius-sm: 6px;
+  --fe-radius-md: 10px;
+  --fe-radius-lg: 12px;
+  --fe-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --fe-border: 1px solid var(--fe-gray-200);
+  --fe-border-print: 1px solid var(--fe-gray-300);
+}
+
+/* --------------------------------------------------------------------------
+   Contrast notes (kept in code so the reasoning travels with the tokens):
+   - fe-ink (#111827) and fe-gray-900 (#1A1A1A) on fe-gray-0/50 exceed
+     WCAG AA (>7:1) for body text.
+   - White text on fe-ca (#1E2D40) is ~11.9:1, on fe-cf (#BA7517) is
+     ~3.9:1 — CF header text therefore uses fe-gray-900, not white, to
+     stay AA compliant at 10pt bold; see chartTheme.js treatmentTextColor().
+   - Semantic -bg tints always pair with their matching solid text colour
+     (e.g. fe-positive-bg with fe-positive), never mixed across pairs.
+   -------------------------------------------------------------------------- */

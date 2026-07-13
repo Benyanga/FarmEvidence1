@@ -1,0 +1,385 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+@import './styles/design-tokens.css';
+
+/* ---------------------------------------------------------------------
+ * One typeface, everywhere. DM Sans was previously scoped to the two data
+ * dashboards only; every other screen (Setups, Data Entry, Analysis,
+ * Reports, Settings) still shipped Bootstrap's Roboto default, which is
+ * why the app read as two different products stitched together. This is
+ * the single point of change — every page inherits it from <body>.
+ * ------------------------------------------------------------------- */
+:root {
+  --bs-font-sans-serif: var(--fe-font-ui);
+  --bs-body-font-family: var(--fe-font-ui);
+  --bs-body-color: var(--fe-gray-800);
+}
+
+body {
+  margin: 0;
+  font-family: var(--fe-font-ui);
+  color: var(--fe-gray-800);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--fe-font-ui);
+  font-weight: 700;
+  color: var(--fe-ink);
+}
+
+/* ---------------------------------------------------------------------
+ * Global button system: every button gets a solid, well-proportioned
+ * shape with tactile hover/press feedback. Outline variants are recast
+ * as solid fills (same color as their hover state) so "outline" and
+ * "solid" buttons read as one consistent, confident design language.
+ * ------------------------------------------------------------------- */
+.btn {
+  border-radius: 10px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  padding: 0.5rem 1.1rem;
+  box-shadow: 0 2px 8px -3px rgba(15, 23, 18, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease, background-color 0.15s ease;
+}
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 16px -6px rgba(15, 23, 18, 0.4);
+  filter: brightness(1.03);
+}
+.btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 5px -2px rgba(15, 23, 18, 0.35);
+  filter: brightness(0.98);
+}
+.btn:disabled,
+.btn.disabled {
+  box-shadow: none;
+  transform: none;
+}
+.btn:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: 2px;
+}
+.btn-sm {
+  border-radius: 8px;
+  padding: 0.32rem 0.85rem;
+}
+.btn-lg {
+  border-radius: 12px;
+  padding: 0.7rem 1.6rem;
+}
+.btn-link {
+  box-shadow: none;
+  font-weight: 500;
+}
+.btn-link:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-outline-success {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: #198754;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #157347;
+  --bs-btn-hover-border-color: #146c43;
+  --bs-btn-active-color: #fff;
+}
+.btn-outline-dark {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: #212529;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #424649;
+  --bs-btn-hover-border-color: #373b3e;
+  --bs-btn-active-color: #fff;
+}
+.btn-outline-secondary {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: #6c757d;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #5c636a;
+  --bs-btn-hover-border-color: #565e64;
+  --bs-btn-active-color: #fff;
+}
+.btn-outline-danger {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: #dc3545;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #bb2d3b;
+  --bs-btn-hover-border-color: #b02a37;
+  --bs-btn-active-color: #fff;
+}
+.btn-outline-light {
+  --bs-btn-color: #000;
+  --bs-btn-bg: #f8f9fa;
+  --bs-btn-hover-color: #000;
+  --bs-btn-hover-bg: #d3d4d5;
+  --bs-btn-hover-border-color: #c6c7c8;
+  --bs-btn-active-color: #000;
+}
+
+/* ---------------------------------------------------------------------
+ * Text-contrast rule: green or black surfaces get white text, white/
+ * light surfaces get near-black text. Bootstrap's own solid buttons,
+ * navbar-dark and badges already satisfy this; these cover the rest.
+ * ------------------------------------------------------------------- */
+.bg-success,
+.bg-dark,
+.navbar-dark .navbar-brand,
+.navbar-dark .nav-link {
+  color: #fff;
+}
+.card,
+.list-group-item,
+.table {
+  color: var(--fe-ink);
+}
+
+/* ---------------------------------------------------------------------
+ * Interaction polish: cards and clickable rows respond to hover/press
+ * so the app feels alive, not static.
+ * ------------------------------------------------------------------- */
+a,
+.nav-link,
+.card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+.card {
+  background: var(--fe-gray-0);
+  border: var(--fe-border);
+  border-radius: var(--fe-radius-lg);
+  box-shadow: var(--fe-shadow-card);
+}
+.card-header {
+  background: transparent;
+  border-bottom: var(--fe-border);
+  font-weight: 600;
+  color: var(--fe-gray-800);
+}
+.card-title {
+  color: var(--fe-ink);
+  font-weight: 700;
+}
+a.card:hover,
+.card.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px -12px rgba(15, 23, 18, 0.35);
+}
+.table-hover > tbody > tr {
+  transition: background-color 0.12s ease;
+}
+::selection {
+  background: #b7ecd2;
+}
+
+/* ---------------------------------------------------------------------
+ * Tables: the dashboard's quiet, muted-header convention (uppercase,
+ * letter-spaced, gray label over dark value) replaces Bootstrap's plain
+ * bold-black header row everywhere a table appears outside the dashboards.
+ * ------------------------------------------------------------------- */
+.table {
+  --bs-table-color: var(--fe-gray-800);
+  font-size: 0.9rem;
+}
+.table > thead {
+  border-bottom: 2px solid var(--fe-gray-200);
+}
+.table > thead th {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fe-gray-500);
+  border-bottom-width: 1px;
+  padding-top: 0.6rem;
+  padding-bottom: 0.6rem;
+}
+.table > tbody td {
+  vertical-align: middle;
+  color: var(--fe-gray-800);
+}
+.table > tbody tr:hover {
+  background-color: var(--fe-gray-50);
+}
+
+/* ---------------------------------------------------------------------
+ * Tabs: Bootstrap's boxy underline-tab default is replaced with the same
+ * quiet pill-tab pattern the dashboards use for entity/season switching
+ * (see .stab in DashboardShared.css) — one tab language app-wide.
+ * ------------------------------------------------------------------- */
+.nav-tabs {
+  border-bottom: 1px solid var(--fe-gray-200);
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.nav-tabs .nav-link {
+  border: none;
+  border-radius: var(--fe-radius-sm) var(--fe-radius-sm) 0 0;
+  color: var(--fe-gray-600);
+  font-weight: 500;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.9rem;
+}
+.nav-tabs .nav-link:hover {
+  background: var(--fe-gray-50);
+  border-color: transparent;
+  color: var(--fe-brand-700);
+}
+.nav-tabs .nav-link.active {
+  background: var(--fe-brand-100);
+  border-color: transparent;
+  color: var(--fe-brand-900);
+  font-weight: 700;
+}
+.nav-pills .nav-link.active {
+  background-color: var(--fe-brand-700);
+}
+
+/* ---------------------------------------------------------------------
+ * Forms: consistent radius/border/focus ring across every input, select
+ * and textarea in the app (Settings, trial setup, data entry, etc.).
+ * ------------------------------------------------------------------- */
+.form-control,
+.form-select {
+  border-radius: var(--fe-radius-sm);
+  border-color: var(--fe-gray-200);
+  color: var(--fe-ink);
+}
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--fe-brand-500);
+  box-shadow: 0 0 0 0.2rem var(--fe-brand-100);
+}
+.form-label {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--fe-gray-700);
+}
+
+/* ---------------------------------------------------------------------
+ * Badges: consistent weight/shape everywhere a status pill appears.
+ * ------------------------------------------------------------------- */
+.badge {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: var(--fe-radius-sm);
+  padding: 0.35em 0.65em;
+}
+
+/* Muted secondary text, matching the dashboards' caption convention. */
+.text-muted {
+  color: var(--fe-gray-500) !important;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+/* ---------------------------------------------------------------------
+ * Persistent app topbar (ResearchTopbar / FarmerTopbar): sticky, with a
+ * subtle shadow so it reads as a distinct chrome layer above the page.
+ * ------------------------------------------------------------------- */
+.app-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  box-shadow: 0 2px 12px -4px rgba(0, 0, 0, 0.35);
+}
+.app-topbar-divider {
+  width: 1px;
+  align-self: stretch;
+  background: rgba(255, 255, 255, 0.25);
+  margin: 0.25rem 1rem 0.25rem 0;
+}
+.app-topbar-badge {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* ---------------------------------------------------------------------
+ * Persistent app sidebar (ResearchSidebar / FarmerSidebar): icon + label
+ * rows with a clear active state (green rail + tinted background).
+ * ------------------------------------------------------------------- */
+.app-sidebar {
+  gap: 2px;
+}
+.app-sidebar-link {
+  color: #111 !important;
+  font-weight: 500;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  border-left: 3px solid transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.app-sidebar-link svg {
+  flex-shrink: 0;
+  color: #6b7a72;
+  transition: color 0.15s ease;
+}
+.app-sidebar-link:hover {
+  background: rgba(20, 145, 79, 0.08);
+  color: #0f6e3d !important;
+}
+.app-sidebar-link:hover svg {
+  color: #0f6e3d;
+}
+.app-sidebar-link.active {
+  background: rgba(20, 145, 79, 0.14);
+  border-left-color: #198754;
+  color: #0f6e3d !important;
+  font-weight: 700;
+}
+.app-sidebar-link.active svg {
+  color: #198754;
+}
+
+@media (max-width: 767.98px) {
+  .app-sidebar-link {
+    border-left: none;
+    border-bottom: 3px solid transparent;
+  }
+  .app-sidebar-link.active {
+    border-bottom-color: #198754;
+  }
+}
+
+/* Contextual sidebar (components/layout/Sidebar.jsx): horizontal scroll strip
+   on mobile, fixed-width vertical column from md up. */
+.sidebar-nav {
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 768px) {
+  .sidebar-nav {
+    min-width: 180px;
+    white-space: normal;
+  }
+}
+
+/* Python-rendered dashboard chart images (FarmerDashboard/ResearcherDashboard). */
+.dashboard-chart {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 42, 29, 0.08);
+  background: #fff;
+}
+
+/* Keep chart canvases from forcing their card wider than the viewport. */
+.chart-container {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Small-screen readability: slightly tighter headings and card padding. */
+@media (max-width: 575.98px) {
+  h4 {
+    font-size: 1.25rem;
+  }
+  .card-body {
+    padding: 0.75rem;
+  }
+}

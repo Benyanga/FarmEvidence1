@@ -1,0 +1,14 @@
+node_modules/
+server/.env
+client/.env
+build/
+client/build/
+.DS_Store
+*.log
+npm-debug.log*
+coverage/
+python-service/.venv/
+python-service/__pycache__/
+**/__pycache__/
+*.pyc
+.claude/

@@ -1,0 +1,17 @@
+{
+  "short_name": "FarmEvidence",
+  "name": "FarmEvidence — Conservation Agriculture Evidence Platform",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "theme_color": "#2e7d32",
+  "background_color": "#ffffff"
+}

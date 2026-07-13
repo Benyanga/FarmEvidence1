@@ -1,0 +1,77 @@
+/* Researcher Dashboard — page-specific rules only. Shared chrome (header,
+   tabs, card, alerts, sync pill, DM Sans/.rdash reset) lives in
+   DashboardShared.css, imported by ResearcherDashboard.jsx alongside this
+   file, so nothing here is duplicated between the two dashboards. Colours
+   read from styles/design-tokens.css (imported globally in index.css). */
+
+/* ---------- Status row ---------- */
+.rdash .status-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+@media (max-width: 900px) { .rdash .status-row { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 480px) { .rdash .status-row { grid-template-columns: 1fr; } }
+.rdash .stat-mini { background: var(--fe-gray-0); border: var(--fe-border); border-radius: var(--fe-radius-md); padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
+.rdash .sm-icon { width: 34px; height: 34px; border-radius: var(--fe-radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.rdash .sm-text { display: flex; flex-direction: column; min-width: 0; }
+.rdash .sm-val { font-size: 15px; font-weight: 600; color: var(--fe-ink); }
+.rdash .sm-lbl { font-size: 10px; color: var(--fe-gray-500); margin-top: 1px; }
+
+/* ---------- Treatment comparison ---------- */
+.rdash .comp-card { background: var(--fe-gray-0); border: var(--fe-border); border-radius: var(--fe-radius-lg); padding: 14px 18px; box-shadow: var(--fe-shadow-card); margin-bottom: 12px; }
+.rdash .cc-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px; margin-bottom: 12px; }
+.rdash .cc-title { font-size: 12px; font-weight: 600; color: var(--fe-gray-800); text-transform: uppercase; letter-spacing: .5px; }
+.rdash .cc-sub { font-size: 11px; color: var(--fe-gray-500); }
+.rdash .comp-table { width: 100%; border-collapse: collapse; }
+.rdash .comp-table th { padding: 8px 12px; font-size: 10px; font-weight: 600; letter-spacing: .3px; text-align: right; border-bottom: var(--fe-border); color: var(--fe-gray-0); }
+.rdash .comp-table th:first-child { text-align: left; color: var(--fe-gray-600); background: none; }
+.rdash .comp-table th:last-child { color: var(--fe-gray-600); background: none; }
+.rdash .comp-table td { padding: 8px 12px; font-size: 12px; text-align: right; border-bottom: 0.5px solid #F1F5F9; }
+.rdash .comp-table td:first-child { text-align: left; color: var(--fe-gray-800); font-weight: 500; }
+.rdash .comp-table tr:last-child td { border-bottom: none; }
+.rdash .th-ca { background: var(--fe-ca); border-radius: 6px 6px 0 0; }
+.rdash .th-cf { background: var(--fe-cf); }
+.rdash .best { font-weight: 700; color: var(--fe-ink); }
+.rdash .delta-row td { font-weight: 600; border-top: 2px solid var(--fe-gray-200); }
+.rdash .delta-pos { color: var(--fe-positive); }
+.rdash .pill-sm { display: inline-flex; padding: 1px 7px; border-radius: var(--fe-radius-sm); font-size: 10px; font-weight: 600; white-space: nowrap; }
+.rdash .ps-g { background: var(--fe-positive-bg); color: var(--fe-positive); }
+.rdash .ps-a { background: var(--fe-caution-bg); color: var(--fe-caution); }
+.rdash .empty-comparison { padding: 18px; text-align: center; color: var(--fe-gray-600); font-size: 12px; }
+
+/* ---------- Bottom grid ---------- */
+.rdash .bottom-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+@media (max-width: 900px) { .rdash .bottom-grid { grid-template-columns: 1fr; } }
+
+.rdash .sig-card, .rdash .plots-card, .rdash .alerts-card, .rdash .chart-card {
+  background: var(--fe-gray-0); border: var(--fe-border); border-radius: var(--fe-radius-lg); padding: 14px 18px; box-shadow: var(--fe-shadow-card);
+}
+.rdash .sc-head, .rdash .pc-head, .rdash .ac-title, .rdash .chart-card-title {
+  font-size: 12px; font-weight: 600; color: var(--fe-gray-800); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px;
+}
+.rdash .sig-banner { padding: 10px 14px; border-radius: var(--fe-radius-sm); margin-bottom: 8px; }
+.rdash .sb-green { background: var(--fe-positive-soft); border: 1px solid #86EFAC; }
+.rdash .sb-amber { background: var(--fe-caution-soft); border: 1px solid #FDE68A; }
+.rdash .sig-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.rdash .sb-green .sig-title, .rdash .sb-green .sig-sub { color: var(--fe-positive); }
+.rdash .sb-amber .sig-title, .rdash .sb-amber .sig-sub { color: var(--fe-caution); }
+.rdash .sig-sub { font-size: 11px; opacity: .85; }
+.rdash .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
+.rdash .stat-item { background: var(--fe-gray-50); border-radius: var(--fe-radius-sm); padding: 8px 10px; }
+.rdash .si-val { font-size: 14px; font-weight: 600; color: var(--fe-ink); }
+.rdash .si-lbl { font-size: 10px; color: var(--fe-gray-500); margin-top: 1px; }
+
+.rdash .plot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.rdash .plot-item { display: flex; align-items: center; gap: 7px; padding: 6px 9px; border-radius: var(--fe-radius-sm); border: 0.5px solid var(--fe-gray-200); }
+.rdash .pi-badge { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.rdash .pi-badge.complete { background: var(--fe-positive-line); }
+.rdash .pi-badge.partial { background: var(--fe-caution-line); }
+.rdash .pi-badge.not_started { background: #D1D5DB; }
+.rdash .pi-label { font-size: 11px; font-weight: 500; color: var(--fe-gray-800); }
+.rdash .pi-status { font-size: 10px; color: var(--fe-gray-500); margin-left: auto; }
+
+/* ---------- Season charts (§3.7) ---------- */
+.rdash .chart-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 10px; }
+@media (max-width: 900px) { .rdash .chart-row { grid-template-columns: 1fr; } }
+.rdash .chart-card img { width: 100%; height: auto; display: block; border-radius: var(--fe-radius-sm); }
+.rdash .chart-caption { font-size: 11px; color: var(--fe-gray-600); margin-top: 8px; line-height: 1.4; }
+.rdash .view-all-row { text-align: right; }
+.rdash .view-all-link { font-size: 12px; font-weight: 600; color: var(--fe-ca); text-decoration: none; }
+.rdash .view-all-link:hover { text-decoration: underline; }

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FarmEvidence — Palette &amp; Chart Style Guide</title>
+<link rel="stylesheet" href="design-tokens.css">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--fe-font-ui);background:var(--fe-gray-50);color:var(--fe-ink);font-size:13px;padding:28px;}
+  h1{font-size:20px;font-weight:700;margin-bottom:4px;}
+  .sub{font-size:12px;color:var(--fe-gray-500);margin-bottom:24px;}
+  h2{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--fe-gray-600);margin:28px 0 10px;}
+  .swatch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;}
+  .swatch{border:var(--fe-border);border-radius:var(--fe-radius-md);overflow:hidden;background:var(--fe-gray-0);box-shadow:var(--fe-shadow-card);}
+  .sw-color{height:52px;}
+  .sw-meta{padding:8px 10px;}
+  .sw-name{font-size:11px;font-weight:600;}
+  .sw-hex{font-size:10px;color:var(--fe-gray-500);margin-top:1px;}
+  .panel{background:var(--fe-gray-0);border:var(--fe-border);border-radius:var(--fe-radius-lg);box-shadow:var(--fe-shadow-card);padding:16px 18px;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  .panel-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--fe-gray-600);margin-bottom:10px;}
+  .panel.print{background:#FFFFFF;font-family:var(--fe-font-print);}
+  .caption{font-size:9px;font-style:italic;color:var(--fe-gray-500);margin-top:6px;}
+  .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;text-transform:uppercase;}
+  .b-dash{background:var(--fe-info-soft);color:var(--fe-info);}
+  .b-report{background:var(--fe-brand-100);color:var(--fe-brand-700);}
+  .note{background:var(--fe-caution-soft);border:1px solid #FDE68A;border-radius:var(--fe-radius-md);padding:10px 14px;font-size:11px;color:var(--fe-caution);margin-bottom:20px;line-height:1.5;}
+  @media (max-width: 900px) { .three-col, .two-col { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<h1>FarmEvidence — Palette and Chart Style Guide</h1>
+<div class="sub">Rendered live from design-tokens.css and chart-theme.js — this page is the source of truth for how colour and graphs must look everywhere in the app.</div>
+
+<div class="note">
+  The categorical palette below was corrected from the originally-supplied set — 5 of 8 slots read as gray
+  (OKLCH chroma below the categorical floor) and one failed 3:1 contrast on white, verified via the
+  dataviz skill's validator, not eyeballed. Each hue family was held constant and only chroma/lightness
+  nudged until every check passed. "Stone grey" in particular can't pass as a true categorical color — near-zero
+  chroma is definitionally indistinguishable under colorblindness simulation — so it now reads as a muted olive.
+  These are the values live in the app (design-tokens.css, python-service/chart_style.py) today.
+</div>
+
+<h2>Brand</h2>
+<div class="swatch-grid" id="swBrand"></div>
+
+<h2>Treatment identity — fixed, never reassigned</h2>
+<div class="swatch-grid" id="swTreatment"></div>
+
+<h2>Semantic states</h2>
+<div class="swatch-grid" id="swSemantic"></div>
+
+<h2>Categorical chart palette</h2>
+<div class="swatch-grid" id="swCategorical"></div>
+
+<h2>Neutral scale</h2>
+<div class="swatch-grid" id="swNeutral"></div>
+
+<h2>Charts — dashboard theme <span class="badge b-dash">DM Sans · live</span> vs report theme <span class="badge b-report">Palatino · print</span></h2>
+<div class="three-col" style="margin-bottom:14px;">
+  <div class="panel">
+    <div class="panel-title">Treatment comparison — dashboard</div>
+    <div id="barDash"></div>
+    <div id="legendBarDash"></div>
+  </div>
+  <div class="panel">
+    <div class="panel-title">Profit trend — dashboard</div>
+    <div id="lineDash"></div>
+  </div>
+  <div class="panel">
+    <div class="panel-title">Cost breakdown — dashboard</div>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div id="donutDash"></div>
+      <div id="legendDonutDash"></div>
+    </div>
+  </div>
+</div>
+
+<div class="three-col">
+  <div class="panel print">
+    <div class="panel-title" style="font-family:var(--fe-font-print);">Treatment comparison — report</div>
+    <div id="barReport"></div>
+    <div class="caption">Figure 1. Profit and revenue by treatment, Season B 2026.</div>
+  </div>
+  <div class="panel print">
+    <div class="panel-title" style="font-family:var(--fe-font-print);">Profit trend — report</div>
+    <div id="lineReport"></div>
+    <div class="caption">Figure 2. Profit per hectare across recorded seasons.</div>
+  </div>
+  <div class="panel print">
+    <div class="panel-title" style="font-family:var(--fe-font-print);">Cost breakdown — report</div>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div id="donutReport"></div>
+      <div id="legendDonutReport"></div>
+    </div>
+    <div class="caption">Figure 3. Recorded cost categories, Conservation Agriculture plots.</div>
+  </div>
+</div>
+
+<script type="module">
+import {
+  dashboardChartTheme, reportChartTheme, TREATMENT, CATEGORICAL,
+  categoricalColor,
+  buildTreatmentBarChart, buildTrendLineChart, buildDonutChart, buildLegend
+} from './chart-theme.js';
+
+/* ---------- palette swatches, read straight from the CSS variables ---------- */
+function sw(container, entries) {
+  const el = document.getElementById(container);
+  el.innerHTML = entries.map(e => `
+    <div class="swatch">
+      <div class="sw-color" style="background:${e.value};"></div>
+      <div class="sw-meta"><div class="sw-name">${e.name}</div><div class="sw-hex">${e.value}</div></div>
+    </div>`).join("");
+}
+const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+sw("swBrand", [
+  { name: "Brand 900", value: cssVar("--fe-brand-900") },
+  { name: "Brand 700 (primary)", value: cssVar("--fe-brand-700") },
+  { name: "Brand 500", value: cssVar("--fe-brand-500") },
+  { name: "Brand 300", value: cssVar("--fe-brand-300") },
+  { name: "Brand 100", value: cssVar("--fe-brand-100") }
+]);
+sw("swTreatment", [
+  { name: "CA — Conservation Agriculture", value: cssVar("--fe-ca") },
+  { name: "CA tint", value: cssVar("--fe-ca-100") },
+  { name: "CF — Conventional Farming", value: cssVar("--fe-cf") },
+  { name: "CF tint", value: cssVar("--fe-cf-100") }
+]);
+sw("swSemantic", [
+  { name: "Positive", value: cssVar("--fe-positive-line") },
+  { name: "Caution", value: cssVar("--fe-caution-line") },
+  { name: "Negative", value: cssVar("--fe-negative-line") },
+  { name: "Info", value: cssVar("--fe-info-line") }
+]);
+sw("swCategorical", CATEGORICAL.map((c, i) => ({ name: `Category ${i + 1}`, value: c })));
+sw("swNeutral", ["--fe-gray-50","--fe-gray-100","--fe-gray-200","--fe-gray-300","--fe-gray-500","--fe-gray-600","--fe-gray-700","--fe-gray-900"]
+  .map(n => ({ name: n.replace("--fe-", ""), value: cssVar(n) })));
+
+/* ---------- sample data, shared across both chart themes ---------- */
+const comparisonData = [
+  { label: "Profit", ca: 185000, cf: 142000 },
+  { label: "Revenue", ca: 245000, cf: 228000 }
+];
+const trendData = [
+  { label: "Season B 2025", value: 144000, treatment: "CA" },
+  { label: "Season A 2026", value: 162600, treatment: "CA" },
+  { label: "Season B 2026", value: 185000, treatment: "CA" }
+];
+const costData = [
+  { label: "Labour", value: 28000 },
+  { label: "Fertilizer", value: 14400 },
+  { label: "Pesticide", value: 8600 },
+  { label: "Residue management", value: 5400 },
+  { label: "Seed", value: 3600 }
+];
+
+/* ---------- dashboard theme renders ---------- */
+document.getElementById("barDash").innerHTML = buildTreatmentBarChart(comparisonData, { theme: dashboardChartTheme });
+document.getElementById("legendBarDash").innerHTML = buildLegend(
+  [{ color: TREATMENT.CA.solid, label: "Conservation Agriculture" }, { color: TREATMENT.CF.solid, label: "Conventional Farming" }],
+  { theme: dashboardChartTheme }
+);
+document.getElementById("lineDash").innerHTML = buildTrendLineChart(trendData, { theme: dashboardChartTheme });
+document.getElementById("donutDash").innerHTML = buildDonutChart(costData, { theme: dashboardChartTheme, centerLabel: "60.0k" });
+document.getElementById("legendDonutDash").innerHTML = buildLegend(
+  costData.map((c, i) => ({ color: categoricalColor(i), label: c.label })), { theme: dashboardChartTheme }
+);
+
+/* ---------- report theme renders (same data, print styling) ---------- */
+document.getElementById("barReport").innerHTML = buildTreatmentBarChart(comparisonData, { theme: reportChartTheme });
+document.getElementById("lineReport").innerHTML = buildTrendLineChart(trendData, { theme: reportChartTheme });
+document.getElementById("donutReport").innerHTML = buildDonutChart(costData, { theme: reportChartTheme, centerLabel: "60.0k" });
+document.getElementById("legendDonutReport").innerHTML = buildLegend(
+  costData.map((c, i) => ({ color: categoricalColor(i), label: c.label })), { theme: reportChartTheme }
+);
+</script>
+</body>
+</html>
