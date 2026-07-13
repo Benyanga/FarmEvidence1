@@ -4,6 +4,24 @@
 
 ## Option A: Render (Recommended)
 
+The repo root has a `render.yaml` Blueprint that defines all three services
+(`farmevidence-api`, `farmevidence-charts`, `farmevidence-client`) with the
+correct **Root Directory** already set per service. Fastest path: Render
+dashboard → **New** → **Blueprint** → point at this repo → Render reads
+`render.yaml` and provisions all three; you only need to fill in the
+`sync: false` secrets it leaves blank. The manual per-service steps below
+are the alternative if you'd rather click through each service yourself
+(or already have services and are fixing one).
+
+> **The most common failure mode**: creating a service without setting
+> **Root Directory**, so Render builds from the repo root instead of
+> `server`/`client`/`python-service`. For the frontend this shows up as
+> `sh: 1: react-scripts: not found` — the root `yarn install`/`npm install`
+> only installs the root `package.json`'s own (empty) dependency list, never
+> `client/node_modules`. `npm run build` at the repo root now also installs
+> `client`'s deps first as a fallback, but **Root Directory: client is still
+> the correct fix** — don't rely on the fallback for a real deploy.
+
 ### Backend → Render Web Service
 
 1. Push code to GitHub (backend in `server/` directory).
@@ -21,15 +39,33 @@
    MONGODB_URI=mongodb+srv://<db-user>:<db-password>@<cluster-host>/farmevidence?appName=Cluster0
    CLERK_SECRET_KEY=sk_test_<your-clerk-secret-key>
    CLIENT_ORIGIN=https://<your-frontend-domain>
+   PYTHON_SERVICE_URL=https://<your-python-chart-service>.onrender.com
    ```
 
 4. Render auto-deploys on every push to `main`.
+
+### Chart service → Render Web Service
+
+The Python chart-rendering microservice (`python-service/`, FastAPI +
+uvicorn) needs its own Web Service — the backend calls it over HTTP for
+every rendered chart, so without it, chart images fail to load.
+
+1. Create a new **Web Service** on Render:
+   - **Root Directory**: `python-service`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+   - **Environment**: Python 3
+
+2. No environment variables needed — nothing in `main.py`/`chart_style.py`
+   reads `os.environ`.
+
+3. Copy its `onrender.com` URL into the backend's `PYTHON_SERVICE_URL` above.
 
 ### Frontend → Render Static Site
 
 1. Create a new **Static Site** on Render:
    - **Root Directory**: `client`
-   - **Build Command**: `npm run build`
+   - **Build Command**: `npm install && npm run build`
    - **Publish Directory**: `build`
 
 2. Set environment variables:
@@ -39,6 +75,9 @@
    ```
 
 3. Add a rewrite rule: `/* → /index.html` (for React Router).
+
+4. Once you have this service's URL, go back and set the backend's
+   `CLIENT_ORIGIN` to it (CORS requires the exact origin).
 
 ---
 

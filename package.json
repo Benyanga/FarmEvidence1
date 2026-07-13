@@ -9,7 +9,7 @@
     "client": "npm start --prefix client",
     "python": "cd python-service && .venv\\Scripts\\python.exe -m uvicorn main:app --reload --reload-dir . --reload-exclude .venv --port 8001",
     "install:all": "npm install --prefix server && npm install --prefix client",
-    "build": "npm run build --prefix client",
+    "build": "npm install --prefix client && npm run build --prefix client",
     "test:server": "npm test --prefix server"
   },
   "devDependencies": {
