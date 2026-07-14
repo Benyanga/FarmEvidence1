@@ -24,10 +24,13 @@ services:
         sync: false
 
   # Chart-rendering microservice — FastAPI/uvicorn. No env vars of its own.
+  # Free plan is fine here (secondary service, occasional cold-start on
+  # chart requests after idle is an acceptable tradeoff) — keep the
+  # backend on a paid plan so the primary API stays always-on.
   - type: web
     name: farmevidence-charts
     runtime: python
-    plan: starter
+    plan: free
     rootDir: python-service
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
