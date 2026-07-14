@@ -4,6 +4,7 @@ import { useAuth } from '@clerk/clerk-react';
 import useRole from '../../hooks/useRole';
 import LoadingSpinner from './LoadingSpinner';
 import OfflineBanner from '../layout/OfflineBanner';
+import ApiHealthBanner from '../layout/ApiHealthBanner';
 import ResearchTopbar from '../layout/ResearchTopbar';
 import ResearchSidebar from '../layout/ResearchSidebar';
 import FarmerTopbar from '../layout/FarmerTopbar';
@@ -22,6 +23,7 @@ export default function ProtectedLayout() {
     return (
       <>
         <ResearchTopbar />
+        <ApiHealthBanner />
         <div className="d-flex flex-column flex-md-row">
           <ResearchSidebar />
           <main className="flex-grow-1 p-3" style={{ minWidth: 0 }}>
@@ -35,6 +37,7 @@ export default function ProtectedLayout() {
   return (
     <>
       <FarmerTopbar />
+      <ApiHealthBanner />
       <OfflineBanner />
       <div className="d-flex flex-column flex-md-row">
         <FarmerSidebar />
