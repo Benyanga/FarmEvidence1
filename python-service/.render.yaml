@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: farmevidence-charts
+    runtime: python
+    plan: free
+    buildCommand: bash ./build-wrapper.sh
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT

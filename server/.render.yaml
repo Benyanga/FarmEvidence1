@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: farmevidence-api
+    runtime: node
+    plan: starter
+    buildCommand: npm install
+    startCommand: node server.js
