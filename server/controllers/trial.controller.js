@@ -77,15 +77,22 @@ async function listTrials(req, res, next) {
 /** GET /trials — every trial owned by the researcher, across all their setups. */
 async function listAllTrials(req, res, next) {
   try {
+    console.log('listAllTrials: Starting...');
     const trials = await Trial.find({ ownerId: req.dbUser._id }).sort({ createdAt: -1 });
+    console.log('listAllTrials: Found trials:', trials.length);
+    
     const setupIds = [...new Set(trials.map((t) => String(t.setupId)))];
     const seasonIds = [...new Set(trials.map((t) => String(t.seasonId)))];
     const trialIds = trials.map((t) => t._id);
+    console.log('listAllTrials: Fetching setups, seasons, treatments...');
+    
     const [setups, seasons, treatments] = await Promise.all([
       Setup.find({ _id: { $in: setupIds } }).select('name location'),
       Season.find({ _id: { $in: seasonIds } }).select('year seasonCode seasonLabel'),
       Treatment.find({ trialId: { $in: trialIds } }).select('trialId code')
     ]);
+    console.log('listAllTrials: Retrieved setups:', setups.length, 'seasons:', seasons.length, 'treatments:', treatments.length);
+    
     const setupById = new Map(setups.map((s) => [String(s._id), s]));
     const seasonById = new Map(seasons.map((s) => [String(s._id), s]));
     const codesByTrial = new Map();
@@ -108,8 +115,10 @@ async function listAllTrials(req, res, next) {
       };
     });
 
+    console.log('listAllTrials: Responding with enriched trials:', enriched.length);
     res.json({ trials: enriched });
   } catch (err) {
+    console.error('listAllTrials error:', err);
     next(err);
   }
 }

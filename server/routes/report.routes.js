@@ -16,6 +16,7 @@ router.post(
     body('reportType').isIn(['seasonal_cba', 'trend_analysis', 'statistical', 'full_season', 'comparative', 'research_analysis']),
     body('title').isString().trim().notEmpty(),
     body('trialId').optional().isMongoId(),
+    body('pdfData').optional().isString(),
     body('language').optional().isIn(['en', 'rw'])
   ],
   validate,

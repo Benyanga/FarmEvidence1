@@ -24,11 +24,21 @@ export default function TrialReportBuilder() {
   const [loadingReports, setLoadingReports] = useState(true);
 
   useEffect(() => {
+    console.log('TrialReportBuilder: Loading trials...');
     api
       .get('/trials')
-      .then(({ data }) => setTrials(data.trials))
-      .catch((err) => setError(err.response?.data?.error || { message: err.message }))
-      .finally(() => setLoading(false));
+      .then(({ data }) => {
+        console.log('TrialReportBuilder: Trials loaded, count:', data.trials.length);
+        setTrials(data.trials);
+      })
+      .catch((err) => {
+        console.error('TrialReportBuilder: Failed to load trials:', err);
+        setError(err.response?.data?.error || { message: err.message });
+      })
+      .finally(() => {
+        console.log('TrialReportBuilder: Trials loading complete');
+        setLoading(false);
+      });
   }, []);
 
   const loadReports = () => {
@@ -49,24 +59,39 @@ export default function TrialReportBuilder() {
     setGenerating(true);
     setError(null);
     try {
-      const found = trials.find((t2) => t2.trial._id === trialId);
-      const { data: analysis } = await api.get(`/trials/${trialId}/analysis`);
-      await downloadTrialReport({ trial: found.trial, analysis });
+      const [{ data: trialDetail }, { data: analysis }] = await Promise.all([
+        api.get(`/trials/${trialId}`),
+        api.get(`/trials/${trialId}/analysis`)
+      ]);
+      const { trial, setup, season, treatments } = trialDetail;
 
-      const title = `${found.trial.crop} — Trial Analysis Report`;
-      await api.post('/reports', {
-        setupId: found.setup?._id,
+      const pdfData = await downloadTrialReport({
+        trial,
+        setup,
+        season,
+        seasonLabel: season ? seasonLabel(season) : '',
+        treatments,
+        analysis
+      });
+
+      const title = `${trial.crop} — Trial Analysis Report`;
+      const reportPayload = {
+        setupId: setup?._id,
         trialId,
         reportType: 'research_analysis',
         title,
         snapshot: {
-          crop: found.trial.crop,
-          numTreatments: found.trial.numTreatments,
-          numReplicates: found.trial.numReplicates
-        }
-      });
+          crop: trial.crop,
+          numTreatments: trial.numTreatments,
+          numReplicates: trial.numReplicates
+        },
+        pdfData
+      };
+
+      await api.post('/reports', reportPayload);
       loadReports();
     } catch (err) {
+      console.error('Trial report generation error:', err);
       setError(err.response?.data?.error || { message: err.message });
     } finally {
       setGenerating(false);
@@ -109,7 +134,7 @@ export default function TrialReportBuilder() {
       ) : reports.length === 0 ? (
         <p className="text-muted">{t('common.noData')}</p>
       ) : (
-        reports.map((r) => <ReportPreview key={r._id} report={r} />)
+        reports.map((r) => <ReportPreview key={r._id} report={r} onDeleted={loadReports} />)
       )}
     </Container>
   );

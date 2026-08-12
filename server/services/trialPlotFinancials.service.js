@@ -56,21 +56,28 @@ async function trialPlotComponentTotals(trialPlotIds) {
   const items = {};
   const inputItems = {};
   const labourItems = {};
+  // Every row for a given name is recorder-tagged with the same costType (the
+  // CP(i,t) rule assigns cost-system-independence per category, not per row),
+  // so the first row seen for a name fixes its tag — needed for Table 5's
+  // per-line C_SD/C_SI column and the C_SD-only cost-structure chart.
+  const itemCostType = {};
   let cSD = 0;
   let cSI = 0;
   for (const c of costs) {
     items[c.inputItem] = (items[c.inputItem] || 0) + (c.totalCostRwf || 0);
     inputItems[c.inputItem] = (inputItems[c.inputItem] || 0) + (c.totalCostRwf || 0);
+    if (!itemCostType[c.inputItem]) itemCostType[c.inputItem] = c.costType;
     if (c.costType === 'C_SD') cSD += c.totalCostRwf || 0;
     else cSI += c.totalCostRwf || 0;
   }
   for (const l of labor) {
     items[l.practice] = (items[l.practice] || 0) + (l.totalCostRwf || 0);
     labourItems[l.practice] = (labourItems[l.practice] || 0) + (l.totalCostRwf || 0);
+    if (!itemCostType[l.practice]) itemCostType[l.practice] = l.costType;
     if (l.costType === 'C_SD') cSD += l.totalCostRwf || 0;
     else cSI += l.totalCostRwf || 0;
   }
-  return { items, inputItems, labourItems, cSD: round2(cSD), cSI: round2(cSI) };
+  return { items, inputItems, labourItems, itemCostType, cSD: round2(cSD), cSI: round2(cSI) };
 }
 
 module.exports = { trialPlotCostBreakdown, trialPlotComponentTotals };

@@ -4,10 +4,10 @@
   "private": true,
   "description": "FarmEvidence Platform — Conservation Agriculture evidence collection & analysis",
   "scripts": {
-    "dev": "concurrently -n SERVER,CLIENT,PYTHON -c blue,green,yellow \"npm run dev --prefix server\" \"npm start --prefix client\" \"npm run python\"",
+    "dev": "concurrently -n SERVER,CLIENT,PYTHON -c blue,green,yellow \"set PORT=10000&& npm run dev --prefix server\" \"set PORT=3001&& npm start --prefix client\" \"npm run python\"",
     "server": "npm run dev --prefix server",
     "client": "npm start --prefix client",
-    "python": "cd python-service && .venv\\Scripts\\python.exe -m uvicorn main:app --reload --reload-dir . --reload-exclude .venv --port 8001",
+    "python": "cd python-service && .venv\\Scripts\\python.exe -m uvicorn main:app --host 127.0.0.1 --port 8001 --reload",
     "install:all": "npm install --prefix server && npm install --prefix client",
     "build": "npm install --prefix client && npm run build --prefix client",
     "start": "node scripts/serve-client.js",

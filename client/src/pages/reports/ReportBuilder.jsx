@@ -83,51 +83,64 @@ export default function ReportBuilder() {
       cnb: computeData.cnb
     };
 
-    await downloadSeasonalCBAReport({ title, seasonLabel: seasonLabel(season), snapshot, plots: computeData.plots });
-    return { title, snapshot };
+    try {
+      console.log('Generating researcher PDF...');
+      const pdfData = await downloadSeasonalCBAReport({ title, seasonLabel: seasonLabel(season), snapshot, plots: computeData.plots });
+      console.log('Researcher PDF generated successfully');
+      return { title, snapshot, pdfData };
+    } catch (err) {
+      console.error('Researcher report generation error:', err);
+      throw err;
+    }
   };
 
-  const generateFarmer = async (season, computeData) => {
-    const title = `${seasonLabel(season)} — Seasonal CBA Report`;
-    const farmAddress = [setup?.location?.village, setup?.location?.cell, setup?.location?.sector, setup?.location?.district]
-      .filter(Boolean)
-      .join(', ');
+  const generateFarmer = async (season) => {
+    // getFarmerDashboard recomputes season/plot figures itself — no separate /compute call needed.
+    const { data: dash } = await api.get(`/seasons/${season._id}/dashboard`);
+    const { season: s, setup: su, plot, seasonHistory } = dash;
 
-    const { data: seasonData } = await api.get(`/seasons/${season._id}`);
-    const plotDetails = await Promise.all(seasonData.plots.map((p) => api.get(`/plots/${p._id}`).then((r) => r.data)));
+    const { data: plotDetail } = await api.get(`/plots/${plot._id}`);
+    const inputCosts = plotDetail.costs || [];
+    const laborCosts = plotDetail.labor || [];
 
-    const inputCosts = plotDetails.flatMap((d) => d.costs);
-    const laborCosts = plotDetails.flatMap((d) => d.labor);
-    const yields = plotDetails.flatMap((d) => d.yields || []);
+    const location = [su?.location?.village, su?.location?.cell, su?.location?.sector, su?.location?.district].filter(Boolean).join(', ');
+    const priorSeasons = (seasonHistory || [])
+      .filter((h) => h.season < s.seasonNumber)
+      .sort((a, b) => b.season - a.season);
 
-    const inputCostTotal = inputCosts.reduce((s, c) => s + (c.totalCost || 0), 0);
-    const laborCostTotal = laborCosts.reduce((s, l) => s + (l.laborCost || 0), 0);
-    const totalRevenue = yields.reduce((s, y) => s + (y.totalRevenue || 0), 0);
+    const profit = plot.computed?.profit ?? 0;
+    const revenue = plot.revenue ?? 0;
+    const cost = plot.computed?.cSystem ?? 0;
+    const harvestKg = plot.yield?.value ?? 0;
+    const profitPerHa = plot.plotArea ? profit / plot.plotArea : null;
 
-    const cba = {
-      grossMargin: mean(computeData.plots.map((p) => p.grossMargin)),
-      roi: mean(computeData.plots.map((p) => p.roi)),
-      bcr: mean(computeData.plots.map((p) => p.bcr)),
-      costPerKg: mean(computeData.plots.map((p) => p.costPerKg)),
-      breakEvenYield: mean(computeData.plots.map((p) => p.breakEvenYield)),
-      yieldMarginOfSafety: mean(computeData.plots.map((p) => p.yieldMarginOfSafety)),
-      adoptionCost: mean(computeData.plots.map((p) => p.adoptionCost))
-    };
+    const title = `${su.name} — Seasonal Report`;
 
-    const totals = { inputCostTotal, laborCostTotal, totalCostOfProduction: inputCostTotal + laborCostTotal, totalRevenue };
-
-    await downloadFarmerSeasonalReport({
-      title,
-      farmAddress: farmAddress || '—',
-      seasonLabel: seasonLabel(season),
+    const pdfData = await downloadFarmerSeasonalReport({
+      farmerName: su.name,
+      system: s.farmingSystem,
+      crop: s.cropType,
+      seasonLabel: seasonLabel(s),
+      location: location || undefined,
+      harvestKg,
+      revenue,
+      cost,
+      profit,
+      profitPerHa,
+      bcr: plot.computed?.bcr,
+      costPerKg: plot.computed?.costPerKg,
+      breakEvenYield: plot.computed?.breakEvenYield,
       inputCosts,
       laborCosts,
-      yields,
-      totals,
-      cba
+      priorSeasons,
+      cooperativeAvgProfit: null
     });
 
-    return { title, snapshot: { ...cba, ...totals } };
+    return {
+      title,
+      snapshot: { profit, revenue, cost, bcr: plot.computed?.bcr, costPerKg: plot.computed?.costPerKg, breakEvenYield: plot.computed?.breakEvenYield },
+      pdfData
+    };
   };
 
   const generate = async () => {
@@ -135,23 +148,36 @@ export default function ReportBuilder() {
     setGenerating(true);
     setError(null);
     try {
-      const { data: computeData } = await api.post(`/compute/season/${seasonId}`);
       const season = seasons.find((s) => s._id === seasonId);
       const isFarmer = setup ? !isResearchSetup(setup.setupType) : true;
 
-      const { title, snapshot } = isFarmer ? await generateFarmer(season, computeData) : await generateResearch(season, computeData);
+      let title;
+      let snapshot;
+      let pdfData;
+      if (isFarmer) {
+        ({ title, snapshot, pdfData } = await generateFarmer(season));
+      } else {
+        const { data: computeData } = await api.post(`/compute/season/${seasonId}`);
+        ({ title, snapshot, pdfData } = await generateResearch(season, computeData));
+      }
 
-      await api.post('/reports', {
+      const reportPayload = {
         setupId,
         seasonId,
         reportType: 'seasonal_cba',
         title,
         snapshot,
+        pdfData,
         language: i18n.language
-      });
+      };
+      console.log('Sending report to server:', { ...reportPayload, pdfData: pdfData ? `[${pdfData.length} chars]` : 'null' });
+
+      const response = await api.post('/reports', reportPayload);
+      console.log('Report saved successfully:', response.data);
 
       await loadReports();
     } catch (err) {
+      console.error('Report generation failed:', err);
       setError(err.response?.data?.error || { message: err.message });
     } finally {
       setGenerating(false);
@@ -214,7 +240,7 @@ export default function ReportBuilder() {
       ) : reports.length === 0 ? (
         <p className="text-muted">{t('common.noData')}</p>
       ) : (
-        reports.map((r) => <ReportPreview key={r._id} report={r} />)
+        reports.map((r) => <ReportPreview key={r._id} report={r} onDeleted={loadReports} />)
       )}
     </Container>
   );

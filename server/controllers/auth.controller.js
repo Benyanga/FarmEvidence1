@@ -56,13 +56,18 @@ async function setRole(req, res, next) {
     const { role } = req.body;
 
     const clerkUser = await clerkClient.users.getUser(req.user.clerkId);
-    if (clerkUser.publicMetadata?.role) {
+    const existingRole = clerkUser.publicMetadata?.role;
+    if (existingRole && existingRole !== role) {
       return res.status(403).json({
         error: { code: 'ROLE_ALREADY_SET', message: 'Role is set at registration and cannot be changed. Contact an administrator.' }
       });
     }
 
-    await clerkClient.users.updateUserMetadata(req.user.clerkId, { publicMetadata: { role } });
+    // Only Clerk was previously updated (e.g. the Mongo write below failed on
+    // a prior attempt); re-syncing the same role must not be blocked as a change.
+    if (!existingRole) {
+      await clerkClient.users.updateUserMetadata(req.user.clerkId, { publicMetadata: { role } });
+    }
 
     const user = await User.findOneAndUpdate(
       { clerkId: req.user.clerkId },

@@ -15,14 +15,23 @@ async function listReports(req, res, next) {
 
 async function createReport(req, res, next) {
   try {
+    console.log('createReport - Received payload:', {
+      hasTitle: !!req.body.title,
+      hasPdfData: !!req.body.pdfData,
+      pdfDataLength: req.body.pdfData?.length,
+      reportType: req.body.reportType
+    });
+    
     const report = await Report.create({
       ...req.body,
       ownerId: req.dbUser._id,
       generatedBy: req.dbUser._id,
       generatedAt: new Date()
     });
+    console.log('createReport - Report saved:', { reportId: report._id, hasPdfData: !!report.pdfData });
     res.status(201).json({ report });
   } catch (err) {
+    console.error('createReport error:', err);
     next(err);
   }
 }

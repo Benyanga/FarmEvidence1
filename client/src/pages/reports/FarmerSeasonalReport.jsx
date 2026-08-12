@@ -11,17 +11,11 @@ import { downloadFarmerSeasonalReport } from '../../utils/pdf';
 import { seasonLabel } from '../../utils/formatters';
 import i18n from '../../i18n';
 
-function mean(arr) {
-  const vals = arr.filter((v) => typeof v === 'number');
-  return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
-}
-
 /** Farmer Mode Seasonal Report — scoped to a single season, reached via that season's sidebar. */
 export default function FarmerSeasonalReport() {
   const { t } = useTranslation();
   const { seasonId } = useParams();
   const [season, setSeason] = useState(null);
-  const [setup, setSetup] = useState(null);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingReports, setLoadingReports] = useState(true);
@@ -45,8 +39,6 @@ export default function FarmerSeasonalReport() {
     try {
       const { data } = await api.get(`/seasons/${seasonId}`);
       setSeason(data.season);
-      const setupRes = await api.get(`/setups/${data.season.setupId}`);
-      setSetup(setupRes.data.setup);
     } catch (err) {
       setError(err.response?.data?.error || { message: err.message });
     } finally {
@@ -63,53 +55,55 @@ export default function FarmerSeasonalReport() {
     setGenerating(true);
     setError(null);
     try {
-      const { data: computeData } = await api.post(`/compute/season/${seasonId}`);
-      const title = `${seasonLabel(season)} — Seasonal CBA Report`;
-      const farmAddress = [setup?.location?.village, setup?.location?.cell, setup?.location?.sector, setup?.location?.district]
-        .filter(Boolean)
-        .join(', ');
+      // getFarmerDashboard recomputes season/plot figures itself — no separate /compute call needed.
+      const { data: dash } = await api.get(`/seasons/${seasonId}/dashboard`);
+      const { season: s, setup: su, plot, seasonHistory } = dash;
 
-      const { data: seasonData } = await api.get(`/seasons/${seasonId}`);
-      const plotDetails = await Promise.all(seasonData.plots.map((p) => api.get(`/plots/${p._id}`).then((r) => r.data)));
+      const { data: plotDetail } = await api.get(`/plots/${plot._id}`);
+      const inputCosts = plotDetail.costs || [];
+      const laborCosts = plotDetail.labor || [];
 
-      const inputCosts = plotDetails.flatMap((d) => d.costs);
-      const laborCosts = plotDetails.flatMap((d) => d.labor);
-      const yields = plotDetails.flatMap((d) => d.yields || []);
+      const location = [su?.location?.village, su?.location?.cell, su?.location?.sector, su?.location?.district].filter(Boolean).join(', ');
+      const priorSeasons = (seasonHistory || [])
+        .filter((h) => h.season < s.seasonNumber)
+        .sort((a, b) => b.season - a.season);
 
-      const inputCostTotal = inputCosts.reduce((s, c) => s + (c.totalCost || 0), 0);
-      const laborCostTotal = laborCosts.reduce((s, l) => s + (l.laborCost || 0), 0);
-      const totalRevenue = yields.reduce((s, y) => s + (y.totalRevenue || 0), 0);
+      const profit = plot.computed?.profit ?? 0;
+      const revenue = plot.revenue ?? 0;
+      const cost = plot.computed?.cSystem ?? 0;
+      const harvestKg = plot.yield?.value ?? 0;
+      const profitPerHa = plot.plotArea ? profit / plot.plotArea : null;
 
-      const cba = {
-        grossMargin: mean(computeData.plots.map((p) => p.grossMargin)),
-        roi: mean(computeData.plots.map((p) => p.roi)),
-        bcr: mean(computeData.plots.map((p) => p.bcr)),
-        costPerKg: mean(computeData.plots.map((p) => p.costPerKg)),
-        breakEvenYield: mean(computeData.plots.map((p) => p.breakEvenYield)),
-        yieldMarginOfSafety: mean(computeData.plots.map((p) => p.yieldMarginOfSafety)),
-        adoptionCost: mean(computeData.plots.map((p) => p.adoptionCost))
-      };
+      const title = `${su.name} — Seasonal Report`;
 
-      const totals = { inputCostTotal, laborCostTotal, totalCostOfProduction: inputCostTotal + laborCostTotal, totalRevenue };
-
-      await downloadFarmerSeasonalReport({
-        title,
-        farmAddress: farmAddress || '—',
-        seasonLabel: seasonLabel(season),
+      const pdfData = await downloadFarmerSeasonalReport({
+        farmerName: su.name,
+        system: s.farmingSystem,
+        crop: s.cropType,
+        seasonLabel: seasonLabel(s),
+        location: location || undefined,
+        harvestKg,
+        revenue,
+        cost,
+        profit,
+        profitPerHa,
+        bcr: plot.computed?.bcr,
+        costPerKg: plot.computed?.costPerKg,
+        breakEvenYield: plot.computed?.breakEvenYield,
         inputCosts,
         laborCosts,
-        yields,
-        totals,
-        cba
+        priorSeasons,
+        cooperativeAvgProfit: null
       });
 
       await api.post('/reports', {
-        setupId: setup._id,
+        setupId: su._id,
         seasonId,
         reportType: 'seasonal_cba',
         title,
-        snapshot: { ...cba, ...totals },
-        language: i18n.language
+        snapshot: { profit, revenue, cost, bcr: plot.computed?.bcr, costPerKg: plot.computed?.costPerKg, breakEvenYield: plot.computed?.breakEvenYield },
+        language: i18n.language,
+        pdfData
       });
 
       await loadReports();
@@ -145,7 +139,7 @@ export default function FarmerSeasonalReport() {
       ) : reports.length === 0 ? (
         <p className="text-muted">{t('common.noData')}</p>
       ) : (
-        reports.map((r) => <ReportPreview key={r._id} report={r} />)
+        reports.map((r) => <ReportPreview key={r._id} report={r} onDeleted={loadReports} />)
       )}
     </Container>
   );

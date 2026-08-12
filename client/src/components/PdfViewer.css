@@ -1,0 +1,22 @@
+.pdf-viewer-modal {
+  z-index: 1050;
+}
+
+.pdf-viewer-modal .modal-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  padding: 1rem 1.5rem;
+}
+
+.pdf-viewer-modal .modal-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.pdf-viewer-modal .modal-body {
+  background-color: #fff;
+}
+
+.pdf-viewer-modal iframe {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}

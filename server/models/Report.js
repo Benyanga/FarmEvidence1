@@ -21,7 +21,10 @@ const reportSchema = new Schema(
     // indicator set, research_analysis snapshots carry the full tabulation.
     snapshot: Schema.Types.Mixed,
 
-    language: { type: String, enum: ['en', 'rw'], default: 'en' }
+    language: { type: String, enum: ['en', 'rw'], default: 'en' },
+
+    // Base64-encoded PDF data for in-app viewing
+    pdfData: { type: String, default: null }
   },
   { timestamps: { createdAt: true, updatedAt: false } }
 );

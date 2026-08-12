@@ -13,7 +13,7 @@ const {
   computeSensitivity,
   computePartialBudgetAnalysis
 } = require('../engines/researchAnalysis.engine');
-const { computeOneWayAnova, computePooledTTest } = require('../engines/statistical.engine');
+const { computeOneWayAnova, computeRCBDAnova, computePooledTTest } = require('../engines/statistical.engine');
 
 function round2(n) {
   return typeof n === 'number' && Number.isFinite(n) ? Math.round(n * 100) / 100 : null;
@@ -87,6 +87,8 @@ function buildCbaSummary(rowsByTreatment, labels, extrapolationFactor) {
   const cSDSeries = seriesFor(rowsByTreatment, (r) => r.rollup.cSDTotal);
   const cSISeries = seriesFor(rowsByTreatment, (r) => r.rollup.cSITotal);
   const netBenefitSeries = seriesFor(rowsByTreatment, (r) => r.rollup.netBenefit);
+  const labourTimeSeries = seriesFor(rowsByTreatment, (r) => r.costBreakdown.laborTimeMinutes);
+  const labourCostSeries = seriesFor(rowsByTreatment, (r) => r.costBreakdown.laborCostTotal);
 
   const treatmentCba = {};
   for (const label of labels) {
@@ -116,7 +118,7 @@ function buildCbaSummary(rowsByTreatment, labels, extrapolationFactor) {
   return {
     cbaSummary,
     treatmentCba,
-    series: { yieldSeries, revenueSeries, totalCostSeries, cSDSeries, cSISeries, netBenefitSeries }
+    series: { yieldSeries, revenueSeries, totalCostSeries, cSDSeries, cSISeries, netBenefitSeries, labourTimeSeries, labourCostSeries }
   };
 }
 
@@ -150,13 +152,23 @@ async function getTrialAnalysis(req, res, next) {
     const {
       cbaSummary,
       treatmentCba,
-      series: { yieldSeries, revenueSeries, totalCostSeries, cSDSeries, cSISeries, netBenefitSeries }
+      series: { yieldSeries, revenueSeries, totalCostSeries, cSDSeries, cSISeries, netBenefitSeries, labourTimeSeries, labourCostSeries }
     } = buildCbaSummary(rowsByTreatment, labels, extrapolationFactor);
 
-    // §4 — per-plot roll-ups.
+    // §4 — per-plot roll-ups. yieldKg/grossRevenueRwf are the recorded raw
+    // inputs (not part of computePlotRollup's derived-fields return) — the
+    // Trial Mode report's Raw Data/Appendix sections need them alongside
+    // the cost/margin roll-up.
     const plots = Object.values(rowsByTreatment)
       .flat()
-      .map((r) => ({ plotId: r.plot._id, treatmentId: r.plot.treatmentId, replicateNumber: r.plot.replicateNumber, ...r.rollup }));
+      .map((r) => ({
+        plotId: r.plot._id,
+        treatmentId: r.plot.treatmentId,
+        replicateNumber: r.plot.replicateNumber,
+        yieldKg: r.yieldEntry?.yieldKg ?? null,
+        grossRevenueRwf: r.yieldEntry?.grossRevenueRwf ?? null,
+        ...r.rollup
+      }));
 
     // §5 — descriptive stats per variable.
     const descriptiveStats = {
@@ -165,7 +177,9 @@ async function getTrialAnalysis(req, res, next) {
       totalProductionCost: aggregateTreatments(totalCostSeries, alpha),
       cSD: aggregateTreatments(cSDSeries, alpha),
       cSI: aggregateTreatments(cSISeries, alpha),
-      netBenefit: aggregateTreatments(netBenefitSeries, alpha)
+      netBenefit: aggregateTreatments(netBenefitSeries, alpha),
+      labourTime: aggregateTreatments(labourTimeSeries, alpha),
+      labourCost: aggregateTreatments(labourCostSeries, alpha)
     };
 
     // §6.2 — Cost structure, component totals per treatment.
@@ -183,7 +197,9 @@ async function getTrialAnalysis(req, res, next) {
       totalProductionCost: totalCostSeries,
       cSD: cSDSeries,
       cSI: cSISeries,
-      netBenefit: netBenefitSeries
+      netBenefit: netBenefitSeries,
+      labourTime: labourTimeSeries,
+      labourCost: labourCostSeries
     };
     const anova = {};
     const tTest = labels.length === 2 ? {} : null;
@@ -197,6 +213,14 @@ async function getTrialAnalysis(req, res, next) {
         );
       }
     }
+
+    // §Trial Mode report spec 1.9 — RCBD block analysis, only meaningful for
+    // a blocked design with >=3 blocks (below that, block effects and
+    // treatment effects are statistically confounded).
+    const rcbdBlockAnalysis =
+      trial.design === 'RCBD' && trial.numReplicates >= 3
+        ? Object.fromEntries(Object.entries(variableSeries).map(([variable, series]) => [variable, computeRCBDAnova(series, alpha)]))
+        : null;
 
     // §6.6 — Yield & Revenue stability/risk.
     const riskStability = {
@@ -231,6 +255,7 @@ async function getTrialAnalysis(req, res, next) {
       costStructure,
       anova,
       tTest,
+      rcbdBlockAnalysis,
       riskStability,
       breakEven,
       sensitivity

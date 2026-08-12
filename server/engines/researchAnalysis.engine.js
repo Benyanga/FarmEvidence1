@@ -182,7 +182,7 @@ function computeCBASummary(treatmentCba, extrapolationFactor) {
 function computeCostStructure(componentTotalsByTreatment) {
   const result = {};
   for (const [label, components] of Object.entries(componentTotalsByTreatment)) {
-    const { cSD = 0, cSI = 0, items = {} } = components;
+    const { cSD = 0, cSI = 0, items = {}, itemCostType = {} } = components;
     const total = cSD + cSI;
     result[label] = {
       total: round2(total),
@@ -193,7 +193,7 @@ function computeCostStructure(componentTotalsByTreatment) {
       components: Object.fromEntries(
         Object.entries(items).map(([name, amount]) => [
           name,
-          { amount: round2(amount), pctOfTotal: total ? round2((amount / total) * 100) : null }
+          { amount: round2(amount), pctOfTotal: total ? round2((amount / total) * 100) : null, costType: itemCostType[name] || null }
         ])
       )
     };
